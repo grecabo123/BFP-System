@@ -1,6 +1,7 @@
 import axios from 'axios'
 import React from 'react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+import Main from './components/Main';
 
 
 axios.defaults.baseURL = "http://127.0.0.1:8000/";
@@ -15,11 +16,13 @@ axios.interceptors.request.use(function (config) {
     return config;
 });
 
+
+
 function App() {
     return (
         <Router>
             <Switch>
-                <Route></Route>
+                <Route path={'/'} name="Login" render={(props) => <Main {...props} />} />
             </Switch>
         </Router>
     )
