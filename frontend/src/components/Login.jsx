@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { InputText } from 'primereact/inputtext';
 import { Panel } from 'primereact/panel';
 import { Button } from 'primereact/button'
@@ -7,18 +7,25 @@ import { Link } from 'react-router-dom';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props'
 import GoogleLogin from 'react-google-login';
 import { gapi } from "gapi-script";
+import axios from 'axios';
+import swal from 'sweetalert';
 
 
 function Login() {
 
+    const [Signin, setSignin] = useState({
+        email: "",
+        password: "",
+        error: [],
+    });
+
     const clientId = "662742889961-vd3nhrmupasv5gbms0clun5f8ea43oun.apps.googleusercontent.com";
-
-
     useEffect(() => {
         gapi.load("client:auth2", () => {
             gapi.auth2.init({ clientId: clientId });
         })
     }, []);
+
 
     const responseFacebook = (response) => {
         const data = {
@@ -34,8 +41,43 @@ function Login() {
             email: response.profileObj.email,
             ID: response.profileObj.googleId,
         }
+    }
+    const handleinput = (e) => {
+        e.persist();
+        setSignin({ ...Signin, [e.target.name]: e.target.value });
+    }
 
-        console.log(data)
+    const LoginAccount = (e) => {
+        e.preventDefault();
+
+        const data = {
+            email: Signin.email,
+            password: Signin.password,
+        }
+        axios.get('/sanctum/csrf-cookie').then(response => {
+            axios.post(`/api/Login`,data).then(res =>{
+                if(res.data.status === 200){
+
+                    // Admin
+                    if(res.data.token === 1){
+
+                    }
+                    //
+                    else if(res.data.token === 2){
+                        
+                    }
+                    // Business Account
+                    else {
+
+                    }
+                }
+            }).catch((error)=> {
+                if(error.response.status === 500){
+                    swal("Warning",error.response.statusText,'warning');
+                }
+            })
+        });
+        
     }
 
     return (
@@ -44,20 +86,19 @@ function Login() {
                 <div className="row justify-content-center">
                     <div className="col-lg-7 col-sm-12">
                         <Panel header="Login">
-                            <form>
-
+                            <form onSubmit={LoginAccount}>
                                 <div className="row">
                                     <div className="col-md-12 mb-1">
                                         <label htmlFor="Username" className="form-label">
                                             Email
                                         </label>
-                                        <InputText keyfilter={'email'} required className='w-100' name='email'></InputText>
+                                        <InputText type="email" keyfilter={'email'} onChange={handleinput} required className='w-100' name='email'></InputText>
                                     </div>
                                     <div className="col-md-12 mb-1">
                                         <label htmlFor="Username" className="form-label">
                                             Password
                                         </label>
-                                        <InputText keyfilter={'hex'} required className='w-100' name='password'></InputText>
+                                        <InputText type="password" keyfilter={'hex'} required className='w-100' name='password'></InputText>
                                     </div>
                                 </div>
                                 <div className="mt-2">
@@ -95,7 +136,7 @@ function Login() {
                                         )}
                                         cookiePolicy={'single_host_origin'} />
 
-                                    
+
                                 </div>
                             </center>
                         </Panel>
